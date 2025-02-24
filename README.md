@@ -358,7 +358,7 @@ First, we configure the API Gateway REST API and define two API resources, one f
 ################################################################################
 # API gateway
 ################################################################################
-resource "aws_api_gateway_rest_api" "API-gw" {
+resource "aws_api_gateway_rest_api" "API-gateway" {
   name        = "lambda_rest_api"
   description = "This is the REST API for Best Books"
   endpoint_configuration {
@@ -370,8 +370,8 @@ resource "aws_api_gateway_rest_api" "API-gw" {
 # API resource for the path "/book"
 ################################################################################
 resource "aws_api_gateway_resource" "API-resource-book" {
-  rest_api_id = aws_api_gateway_rest_api.API-gw.id
-  parent_id   = aws_api_gateway_rest_api.API-gw.root_resource_id
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
+  parent_id   = aws_api_gateway_rest_api.API-gateway.root_resource_id
   path_part   = "book"
 }
 
@@ -379,8 +379,8 @@ resource "aws_api_gateway_resource" "API-resource-book" {
 # API resource for the path "/books"
 ################################################################################
 resource "aws_api_gateway_resource" "API-resource-books" {
-  rest_api_id = aws_api_gateway_rest_api.API-gw.id
-  parent_id   = aws_api_gateway_rest_api.API-gw.root_resource_id
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
+  parent_id   = aws_api_gateway_rest_api.API-gateway.root_resource_id
   path_part   = "books"
 }
 ```
@@ -396,8 +396,11 @@ DELETE /book/{book_id}: Delete a book from the database using its id.
 To implement each HTTP method, we configure the following components:
 
 `Method Request`: Defines the HTTP method (GET, POST, PATCH, DELETE) for the API Gateway.
+
 `Integration Request`: Connects the API Gateway to the Lambda function, allowing it to process requests.
+
 `Integration Response`: Defines how the Lambda function's response is processed and returned to the client.
+
 `Method Response`: Specifies the response format and headers expected from the API Gateway.
 
 Each `HTTP method request` (GET, POST, PATCH, DELETE) defined on a resource needs an `integration request`, which determines where the incoming requests should be sent for processing. In our case, the integration is set up to forward requests to an AWS Lambda function using "AWS_PROXY" as the integration type, API Gateway acts as a direct pass-through to the Lambda function. This means:
@@ -420,14 +423,14 @@ The `Method Response` defines how API Gateway formats and presents the response 
 ################################################################################
 
 resource "aws_api_gateway_method" "GET_one_method" {
-  rest_api_id   = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id   = aws_api_gateway_rest_api.API-gateway.id
   resource_id   = aws_api_gateway_resource.API-resource-book.id
   http_method   = "GET"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "GET_one_lambda_integration" {
-  rest_api_id             = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id             = aws_api_gateway_rest_api.API-gateway.id
   resource_id             = aws_api_gateway_resource.API-resource-book.id
   http_method             = aws_api_gateway_method.GET_one_method.http_method
   type                    = "AWS_PROXY"
@@ -436,7 +439,7 @@ resource "aws_api_gateway_integration" "GET_one_lambda_integration" {
 }
 
 resource "aws_api_gateway_method_response" "GET_one_method_response_200" {
-  rest_api_id = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
   resource_id = aws_api_gateway_resource.API-resource-book.id
   http_method = aws_api_gateway_method.GET_one_method.http_method
   status_code = "200"
@@ -450,7 +453,7 @@ resource "aws_api_gateway_method_response" "GET_one_method_response_200" {
 }
 
 resource "aws_api_gateway_integration_response" "GET_one_integration_response_200" {
-  rest_api_id = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
   resource_id = aws_api_gateway_resource.API-resource-book.id
   http_method = aws_api_gateway_method.GET_one_method.http_method
   status_code = aws_api_gateway_method_response.GET_one_method_response_200.status_code
@@ -476,14 +479,14 @@ resource "aws_api_gateway_integration_response" "GET_one_integration_response_20
 ################################################################################
 
 resource "aws_api_gateway_method" "GET_all_method" {
-  rest_api_id   = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id   = aws_api_gateway_rest_api.API-gateway.id
   resource_id   = aws_api_gateway_resource.API-resource-books.id
   http_method   = "GET"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "GET_all_lambda_integration" {
-  rest_api_id             = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id             = aws_api_gateway_rest_api.API-gateway.id
   resource_id             = aws_api_gateway_resource.API-resource-books.id
   http_method             = aws_api_gateway_method.GET_all_method.http_method
   type                    = "AWS_PROXY"
@@ -492,7 +495,7 @@ resource "aws_api_gateway_integration" "GET_all_lambda_integration" {
 }
 
 resource "aws_api_gateway_method_response" "GET_all_method_response_200" {
-  rest_api_id = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
   resource_id = aws_api_gateway_resource.API-resource-books.id
   http_method = aws_api_gateway_method.GET_all_method.http_method
   status_code = "200"
@@ -506,7 +509,7 @@ resource "aws_api_gateway_method_response" "GET_all_method_response_200" {
 }
 
 resource "aws_api_gateway_integration_response" "GET_all_integration_response_200" {
-  rest_api_id = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
   resource_id = aws_api_gateway_resource.API-resource-books.id
   http_method = aws_api_gateway_method.GET_all_method.http_method
   status_code = aws_api_gateway_method_response.GET_all_method_response_200.status_code
@@ -532,14 +535,14 @@ resource "aws_api_gateway_integration_response" "GET_all_integration_response_20
 ################################################################################
 
 resource "aws_api_gateway_method" "POST_method" {
-  rest_api_id   = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id   = aws_api_gateway_rest_api.API-gateway.id
   resource_id   = aws_api_gateway_resource.API-resource-book.id
   http_method   = "POST"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "POST_lambda_integration" {
-  rest_api_id             = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id             = aws_api_gateway_rest_api.API-gateway.id
   resource_id             = aws_api_gateway_resource.API-resource-book.id
   http_method             = aws_api_gateway_method.POST_method.http_method
   type                    = "AWS_PROXY"
@@ -548,7 +551,7 @@ resource "aws_api_gateway_integration" "POST_lambda_integration" {
 }
 
 resource "aws_api_gateway_method_response" "POST_method_response_200" {
-  rest_api_id = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
   resource_id = aws_api_gateway_resource.API-resource-book.id
   http_method = aws_api_gateway_method.POST_method.http_method
   status_code = "200"
@@ -562,7 +565,7 @@ resource "aws_api_gateway_method_response" "POST_method_response_200" {
 }
 
 resource "aws_api_gateway_integration_response" "POST_integration_response_200" {
-  rest_api_id = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
   resource_id = aws_api_gateway_resource.API-resource-book.id
   http_method = aws_api_gateway_method.POST_method.http_method
   status_code = aws_api_gateway_method_response.POST_method_response_200.status_code
@@ -588,14 +591,14 @@ resource "aws_api_gateway_integration_response" "POST_integration_response_200" 
 ################################################################################
 
 resource "aws_api_gateway_method" "PATCH_method" {
-  rest_api_id   = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id   = aws_api_gateway_rest_api.API-gateway.id
   resource_id   = aws_api_gateway_resource.API-resource-book.id
   http_method   = "PATCH"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "PATCH_lambda_integration" {
-  rest_api_id             = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id             = aws_api_gateway_rest_api.API-gateway.id
   resource_id             = aws_api_gateway_resource.API-resource-book.id
   http_method             = aws_api_gateway_method.PATCH_method.http_method
   type                    = "AWS_PROXY"
@@ -604,14 +607,14 @@ resource "aws_api_gateway_integration" "PATCH_lambda_integration" {
 }
 
 resource "aws_api_gateway_method_response" "PATCH_method_response_200" {
-  rest_api_id = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
   resource_id = aws_api_gateway_resource.API-resource-book.id
   http_method = aws_api_gateway_method.PATCH_method.http_method
   status_code = "200"
 }
 
 resource "aws_api_gateway_integration_response" "PATCH_integration_response_200" {
-  rest_api_id = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
   resource_id = aws_api_gateway_resource.API-resource-book.id
   http_method = aws_api_gateway_method.PATCH_method.http_method
   status_code = aws_api_gateway_method_response.PATCH_method_response_200.status_code
@@ -637,14 +640,14 @@ resource "aws_api_gateway_integration_response" "PATCH_integration_response_200"
 ################################################################################
 
 resource "aws_api_gateway_method" "DELETE_method" {
-  rest_api_id   = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id   = aws_api_gateway_rest_api.API-gateway.id
   resource_id   = aws_api_gateway_resource.API-resource-book.id
   http_method   = "DELETE"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "DELETE_lambda_integration" {
-  rest_api_id             = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id             = aws_api_gateway_rest_api.API-gateway.id
   resource_id             = aws_api_gateway_resource.API-resource-book.id
   http_method             = aws_api_gateway_method.DELETE_method.http_method
   type                    = "AWS_PROXY"
@@ -653,14 +656,14 @@ resource "aws_api_gateway_integration" "DELETE_lambda_integration" {
 }
 
 resource "aws_api_gateway_method_response" "DELETE_method_response_200" {
-  rest_api_id = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
   resource_id = aws_api_gateway_resource.API-resource-book.id
   http_method = aws_api_gateway_method.DELETE_method.http_method
   status_code = "200"
 }
 
 resource "aws_api_gateway_integration_response" "DELETE_integration_response_200" {
-  rest_api_id = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
   resource_id = aws_api_gateway_resource.API-resource-book.id
   http_method = aws_api_gateway_method.DELETE_method.http_method
   status_code = aws_api_gateway_method_response.DELETE_method_response_200.status_code
@@ -684,7 +687,6 @@ resource "aws_api_gateway_integration_response" "DELETE_integration_response_200
 
 Allow the API gateway to invoke the Lambda Function.
 ```terraform
-
 ################################################################################
 # Setup Lambda permission to allow API Gateway to invoke the Lambda function
 ################################################################################
@@ -693,12 +695,11 @@ resource "aws_lambda_permission" "allow_api_gateway_invoke" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.book_lambda_function.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.API-gw.execution_arn}/*/*"
+  source_arn    = "${aws_api_gateway_rest_api.API-gateway.execution_arn}/*/*"
 }
-
 ```
 
-Next we create the deployment and a stage
+Next we create the deployment and a stage. The stage contains the access log settings which describes the format in which API execution logs will be written to cloudwatch. At the end we setup the method settings to allow INFO level logging.
 
 ```terraform
 ################################################################################
@@ -730,7 +731,7 @@ resource "aws_api_gateway_deployment" "example" {
     ]))
   }
 
-  rest_api_id = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
 }
 
 ################################################################################
@@ -738,16 +739,78 @@ resource "aws_api_gateway_deployment" "example" {
 ################################################################################
 resource "aws_api_gateway_stage" "my-prod-stage" {
   deployment_id = aws_api_gateway_deployment.example.id
-  rest_api_id   = aws_api_gateway_rest_api.API-gw.id
+  rest_api_id   = aws_api_gateway_rest_api.API-gateway.id
   stage_name    = "prod"
+
+  # depends_on = [aws_cloudwatch_log_group.api_gateway_execution_logs]
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gateway_execution_logs.arn
+    format = jsonencode({
+      requestId      = "$context.requestId"
+      ip             = "$context.identity.sourceIp"
+      requestTime    = "$context.requestTime"
+      httpMethod     = "$context.httpMethod"
+      resourcePath   = "$context.resourcePath"
+      status         = "$context.status"
+      responseLength = "$context.responseLength"
+    })
+  }
+}
+
+
+################################################################################
+# Method settings
+################################################################################
+resource "aws_api_gateway_method_settings" "method_settings" {
+  rest_api_id = aws_api_gateway_rest_api.API-gateway.id
+  stage_name  = aws_api_gateway_stage.my-prod-stage.stage_name
+  method_path = "*/*"
+  settings {
+    logging_level      = "INFO"
+    data_trace_enabled = true
+    metrics_enabled    = true
+  }
+}
+
+```
+
+Create a cloudwatch log group for API execution logs. 
+
+To enable API execution logs, a role with AmazonAPIGatewayPushToCloudWatchLogs managed policy must be set in API Gateway global settings. Please refer to https://repost.aws/knowledge-center/api-gateway-cloudwatch-logs
+
+```terraform
+################################################################################
+# CloudWatch log group for api execution logs
+################################################################################
+resource "aws_cloudwatch_log_group" "api_gateway_execution_logs" {
+  name              = "API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.API-gateway.id}/prod"
+  retention_in_days = 7
 }
 ```
 
-Enable cloudwatch logging for API Gateway
+### Steps to Run Terraform
+Follow these steps to execute the Terraform configuration:
+```terraform
+terraform init
+terraform plan 
+terraform apply -auto-approve
+Upon successful completion, Terraform will provide relevant outputs.
 
+Apply complete! Resources: 40 added, 0 changed, 0 destroyed.
+```
+
+### Testing
+
+### Cleanup
+Remember to stop AWS components to avoid large bills.
+```terraform
+terraform destroy -auto-approve
+```
 ### Conclusion
 
 This demonstrates how to build a fully serverless, scalable, and cost-effective RESTful API for book management using AWS Lambda, API Gateway, and DynamoDB, with Terraform for automated infrastructure provisioning. It follows best practices for API design, response handling, and infrastructure as code, making it an ideal approach for cloud-native applications. Although, it doesnt include facility to authorize the requests as APIs can be triggered by anyone having the url, therefore we will explore authorization techniques in upcoming blogs!
 
 ### References
-GitHub Repo:
+GitHub Repo: https://github.com/chinmayto/terraform-aws-lambda-api-gateway-dynamodb
+API Execution Logs in Cloudwatch: https://repost.aws/knowledge-center/api-gateway-cloudwatch-logs
