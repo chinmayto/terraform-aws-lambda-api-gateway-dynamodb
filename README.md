@@ -1,4 +1,4 @@
-# Deploying a REST API using API Gateway, Lambda, DynamoDB, and Terraform
+# Deploying a Serverless Architecture with REST API using API Gateway, Lambda, DynamoDB, and Terraform
 
 In this tutorial, we aim to build a hands-on project that is versatile and applicable in various real-world scenarios, especially in today's landscape, where most applications follow a microservices architecture built with modular components.
 
@@ -9,6 +9,10 @@ Specifically, our objective is to create an API hosted on API Gateway, with AWS 
 AWS API Gateway is a fully managed service that enables developers to create, publish, maintain, monitor, and secure APIs at any scale. It acts as a front-end for REST APIs and integrates seamlessly with backend services such as AWS Lambda, EC2, and DynamoDB. API Gateway provides features like request validation, transformation, authentication, rate limiting, and monitoring.
 
 ### Architecture
+Follwing is the serverless architecture we will be dealing with.
+
+![alt text](/images/diagram.png)
+
 ### Step 1: Create Lambda IAM Role
 To enable Lambda to access DynamoDB with basic execution permissions, we need to define an IAM role with the necessary permissions.
 ```terraform
@@ -89,11 +93,11 @@ resource "aws_iam_policy_attachment" "lambda_dynamodb_access" {
 }
 ```
 ### Step 2: Setup lambda code
-This Lambda function serves as the backend for a REST API, handling CRUD operations on a DynamoDB table. It integrates with API Gateway and follows best practices like structured logging, error handling, and efficient DynamoDB interactions. We are using AWS SDK for Python to interact with AWS services (DynamoDB in this case).
+This Lambda function serves as the backend for a REST API, handling CRUD operations on a DynamoDB table. It integrates with API Gateway and follows best practices like structured logging, error handling, and efficient DynamoDB interactions. We are using AWS SDK for Python to interact with DynamoDB.
 
 We have defined a method for each operation and return a response to the API Gateway, with different status codes. We will write the code of the function in Python.
 
-```
+```python
 import os
 import boto3
 from botocore.exceptions import ClientError
@@ -388,10 +392,15 @@ resource "aws_api_gateway_resource" "API-resource-books" {
 We want following API endpoints or Methods:
 
 GET /books: Retrieve the list of all books.
+
 GET /book/{book_id}: Retrieve details of a specific book by its id.
+
 POST /book: Add a new book to the database.
+
 PATCH /book/{book_id}: Update the details of a specific book using its id.
+
 DELETE /book/{book_id}: Delete a book from the database using its id.
+
 
 To implement each HTTP method, we configure the following components:
 
@@ -416,6 +425,7 @@ The `Integration Response` controls how API Gateway processes the response recei
 The `Method Response` defines how API Gateway formats and presents the response to the client. It includes:
 1. Status Codes: Specifies the possible HTTP response codes (e.g., 200 OK, 400 Bad Request, 500 Internal Server Error).
 2. Response Headers: Determines the headers that should be included in the response, such as Content-Type or Access-Control-Allow-Origin (for CORS).
+
 
 ```terraform
 ################################################################################
@@ -795,12 +805,68 @@ Follow these steps to execute the Terraform configuration:
 terraform init
 terraform plan 
 terraform apply -auto-approve
+```
 Upon successful completion, Terraform will provide relevant outputs.
-
+```terraform
 Apply complete! Resources: 40 added, 0 changed, 0 destroyed.
 ```
 
 ### Testing
+Lambda Function with a trigger from API Gateway
+
+![alt text](/images/lambda.png)
+
+Lambda execution role to write Cloudwatch Logs and DynamoDB acccess
+
+![alt text](/images/lambda_permission_1.png)
+
+![alt text](/images/lambda_permission_2.png)
+
+DynamoDB Table with sample items:
+
+![alt text](/images/dynamodb_table.png)
+
+![alt text](/images/dynamodb_items.png)
+
+API Gateway Resources with lambda integration type:
+
+![alt text](/images/apigateway_resources_1.png)
+
+![alt text](/images/apigateway_resources_2.png)
+
+![alt text](/images/apigateway_resources_3.png)
+
+API Gateway `prod` stage with CloudWatch logging enabled showing invoke URL:
+
+![alt text](/images/apigateway_stage.png)
+
+Testing using Postman
+
+1. GET book
+
+![alt text](/images/GET_method.png)
+
+2. POST book
+
+![alt text](/images/POST_method.png)
+
+![alt text](/images/POST_table_items.png)
+
+3. PATCH book
+
+![alt text](/images/PATCH_method.png)
+
+![alt text](/images/PATCH_table_items.png)
+
+4. DELETE book
+
+![alt text](/images/DELETE_method.png)
+
+![alt text](/images/DELETE_table_items.png)
+
+5. GET All Books
+
+![alt text](/images/GET_ALL_method.png)
 
 ### Cleanup
 Remember to stop AWS components to avoid large bills.
