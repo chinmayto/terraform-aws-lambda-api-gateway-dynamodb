@@ -879,4 +879,5 @@ This demonstrates how to build a fully serverless, scalable, and cost-effective 
 
 ### References
 GitHub Repo: https://github.com/chinmayto/terraform-aws-lambda-api-gateway-dynamodb
+
 API Execution Logs in Cloudwatch: https://repost.aws/knowledge-center/api-gateway-cloudwatch-logs
